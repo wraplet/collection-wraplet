@@ -51,6 +51,10 @@ export default class Collection extends AbstractWraplet<
     this.children.itemProviders.push(item);
   }
 
+  public getItems(): CollectionItem[] {
+    return this.children.items;
+  }
+
   public addItem(item: CollectionItem) {
     item.setPosition(this.getHighestPosition() + 1);
     this.element.append(item.getElement());
