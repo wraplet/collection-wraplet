@@ -1,6 +1,6 @@
 {
   "name": "collection-wraplet",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Managing collections.",
   "main": "dist/index.js",
   "repository": {
