@@ -4,6 +4,15 @@ import CollectionItem from "./CollectionItem";
 import Sortable from "sortablejs";
 import { AbstractWraplet, WrapletChildrenMap } from "wraplet";
 
+type PositionCalculationListener = (
+  item: CollectionItem,
+  index: number,
+) => void;
+
+interface Options {
+  positionsCalculationListeners?: PositionCalculationListener[];
+}
+
 const childrenMap = {
   itemProviders: {
     // We don't define selector, because we assume that the dependency will be provided
@@ -24,10 +33,17 @@ export default class Collection extends AbstractWraplet<
   typeof childrenMap,
   HTMLElement
 > {
-  private itemAddedListeners: ((item: CollectionItem) => void)[] = [];
+  private readonly itemAddedListeners: ((item: CollectionItem) => void)[] = [];
+  private readonly positionsCalculationListeners: PositionCalculationListener[] =
+    [];
 
-  constructor(element: HTMLElement) {
+  constructor(element: HTMLElement, options: Options) {
     super(element);
+
+    if (options.positionsCalculationListeners) {
+      this.positionsCalculationListeners =
+        options.positionsCalculationListeners;
+    }
 
     for (const item of this.children.items) {
       item.addRemoveListener(() => {
@@ -35,6 +51,7 @@ export default class Collection extends AbstractWraplet<
       });
     }
 
+    this.syncChildren();
     this.enableSortable();
   }
 
@@ -122,19 +139,28 @@ export default class Collection extends AbstractWraplet<
     this.recalculatePositions();
   }
 
+  public addPositionsCalculationListener(
+    callback: (item: CollectionItem, index: number) => void,
+  ): void {
+    this.positionsCalculationListeners.push(callback);
+  }
+
   private recalculatePositions(): void {
     this.children.items.sort((a, b) => {
       return a.getDOMPosition() - b.getDOMPosition();
     });
     for (const [index, item] of this.children.items.entries()) {
       item.setPosition(index);
+      for (const listener of this.positionsCalculationListeners) {
+        listener(item, index);
+      }
     }
   }
 
   public static create(
     document: Document,
-    additional_args: unknown[] = [],
+    options: Options = {},
   ): Collection[] {
-    return this.createWraplets(document, additional_args, collectionSelector);
+    return this.createWraplets(document, [options], collectionSelector);
   }
 }

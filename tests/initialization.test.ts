@@ -3,7 +3,12 @@
  */
 import "./setup";
 
-import { Collection, CollectionItemProvider } from "../src";
+import {
+  Collection,
+  CollectionItem,
+  CollectionItemProvider,
+  itemAttribute,
+} from "../src";
 import { mainAttribute, mainAddAttribute } from "../src";
 
 test("Test collection initialization.", () => {
@@ -18,4 +23,50 @@ test("Test collection intem provider initialization.", () => {
 
   const providers = CollectionItemProvider.create(document);
   expect(providers).toHaveLength(1);
+});
+
+test("Test initial default position calculation", () => {
+  document.body.innerHTML = `
+<div ${mainAttribute}>
+    <div ${itemAttribute} data-position-selector='[data-position]'><input type='number' data-position/></div>
+    <div ${itemAttribute} data-position-selector='[data-position]'><input type='number' data-position/></div>
+</div>
+`;
+
+  const collections = Collection.create(document);
+  const collection = collections[0];
+
+  const items = collection.getItems();
+  const itemsPositions: number[] = [];
+  for (const item of items) {
+    itemsPositions.push(item.getPosition());
+  }
+
+  expect(itemsPositions).toEqual([0, 1]);
+});
+
+test("Test initial position calculation altered", () => {
+  document.body.innerHTML = `
+<div ${mainAttribute}>
+    <div ${itemAttribute} data-position-selector='[data-position]'><input type='number' data-position/></div>
+    <div ${itemAttribute} data-position-selector='[data-position]'><input type='number' data-position/></div>
+</div>
+`;
+
+  const collections = Collection.create(document, {
+    positionsCalculationListeners: [
+      (item: CollectionItem, index: number): void => {
+        item.setPosition(index + 1);
+      },
+    ],
+  });
+  const collection = collections[0];
+
+  const items = collection.getItems();
+  const itemsPositions: number[] = [];
+  for (const item of items) {
+    itemsPositions.push(item.getPosition());
+  }
+
+  expect(itemsPositions).toEqual([1, 2]);
 });
