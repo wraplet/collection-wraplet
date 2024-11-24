@@ -10,6 +10,7 @@ type PositionCalculationListener = (
 ) => void;
 
 interface Options {
+  calculateInitialPositionOnInit?: boolean;
   positionsCalculationListeners?: PositionCalculationListener[];
 }
 
@@ -37,8 +38,15 @@ export default class Collection extends AbstractWraplet<
   private readonly positionsCalculationListeners: PositionCalculationListener[] =
     [];
 
-  constructor(element: HTMLElement, options: Options) {
+  constructor(element: HTMLElement, providedOptions: Options = {}) {
     super(element);
+
+    const defaultOptions: Required<Options> = {
+      positionsCalculationListeners: [],
+      calculateInitialPositionOnInit: false,
+    };
+
+    const options = { ...defaultOptions, ...providedOptions };
 
     if (options.positionsCalculationListeners) {
       this.positionsCalculationListeners =
@@ -51,7 +59,8 @@ export default class Collection extends AbstractWraplet<
       });
     }
 
-    this.syncChildren();
+    this.syncChildren(options.calculateInitialPositionOnInit);
+
     this.enableSortable();
   }
 
@@ -116,7 +125,7 @@ export default class Collection extends AbstractWraplet<
     });
   }
 
-  private syncChildren() {
+  private syncChildren(recalculatePositions: boolean = true) {
     const selector = `:scope > ${itemSelector}`;
     const elements = this.element.querySelectorAll(selector);
     // Empty an items array.
@@ -136,7 +145,9 @@ export default class Collection extends AbstractWraplet<
       }
       this.children.items.push(collectionItem);
     }
-    this.recalculatePositions();
+    if (recalculatePositions) {
+      this.recalculatePositions();
+    }
   }
 
   public addPositionsCalculationListener(

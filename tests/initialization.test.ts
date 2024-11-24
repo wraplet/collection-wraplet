@@ -33,7 +33,9 @@ test("Test initial default position calculation", () => {
 </div>
 `;
 
-  const collections = Collection.create(document);
+  const collections = Collection.create(document, {
+    calculateInitialPositionOnInit: true,
+  });
   const collection = collections[0];
 
   const items = collection.getItems();
@@ -54,6 +56,7 @@ test("Test initial position calculation altered", () => {
 `;
 
   const collections = Collection.create(document, {
+    calculateInitialPositionOnInit: true,
     positionsCalculationListeners: [
       (item: CollectionItem, index: number): void => {
         item.setPosition(index + 1);
