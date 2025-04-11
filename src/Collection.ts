@@ -1,8 +1,9 @@
 import CollectionItemProvider from "./CollectionItemProvider";
-import { collectionSelector, itemSelector } from "./selectors";
+import { collectionSelector, itemSelector, mainAttribute } from "./selectors";
 import CollectionItem from "./CollectionItem";
 import Sortable from "sortablejs";
 import { AbstractWraplet, WrapletChildrenMap } from "wraplet";
+import { Groupable, GroupExtractor } from "./Groupable";
 
 type PositionCalculationListener = (
   item: CollectionItem,
@@ -30,13 +31,16 @@ const childrenMap = {
   },
 } as const satisfies WrapletChildrenMap;
 
-export default class Collection extends AbstractWraplet<
-  typeof childrenMap,
-  HTMLElement
-> {
+export default class Collection
+  extends AbstractWraplet<typeof childrenMap, HTMLElement>
+  implements Groupable
+{
   private readonly itemAddedListeners: ((item: CollectionItem) => void)[] = [];
   private readonly positionsCalculationListeners: PositionCalculationListener[] =
     [];
+
+  private groupExtractorCallback: GroupExtractor = (element: Element) =>
+    element.getAttribute(mainAttribute);
 
   constructor(element: HTMLElement, providedOptions: Options = {}) {
     super(element);
@@ -62,6 +66,14 @@ export default class Collection extends AbstractWraplet<
     this.syncChildren(options.calculateInitialPositionOnInit);
 
     this.enableSortable();
+  }
+
+  public setGroupExtractor(callback: GroupExtractor): void {
+    this.groupExtractorCallback = callback;
+  }
+
+  public getGroup(): string | null {
+    return this.groupExtractorCallback(this.element);
   }
 
   public addListenerItemAdded(listener: (item: CollectionItem) => void) {

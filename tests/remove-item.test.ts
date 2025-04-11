@@ -8,7 +8,7 @@ import {
   collectionSelector,
   itemAttribute,
   itemRemoveButtonSelector,
-  mainAddAttribute,
+  itemProviderAttribute,
 } from "../src";
 import { mainAttribute } from "../src";
 import { itemRemoveAttribute } from "../src/selectors";
@@ -39,7 +39,7 @@ test("Test removing items from the collection", () => {
 
 test("Test adding item to the collection and removing it.", () => {
   document.body.innerHTML = `
-<div ${mainAddAttribute} data-prototype="<div ${itemAttribute} data-position-selector='[data-position]'><input type='number' data-position/><div ${itemRemoveAttribute}></div></div>"></div>
+<div ${itemProviderAttribute} data-prototype="<div ${itemAttribute} data-position-selector='[data-position]'><input type='number' data-position/><div ${itemRemoveAttribute}></div></div>"></div>
 <div ${mainAttribute}></div>
 `;
 

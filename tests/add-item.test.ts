@@ -8,7 +8,7 @@ import {
   CollectionItemProvider,
   collectionSelector,
   itemProviderSelector,
-  mainAddAttribute,
+  itemProviderAttribute,
   itemAttribute,
   CollectionItem,
 } from "../src";
@@ -42,7 +42,7 @@ export function addItemToCollectionByAddProvider(
 
 test("Test adding item to the collection", () => {
   document.body.innerHTML = `
-<div ${mainAddAttribute} data-prototype="<div ${itemAttribute} data-position-selector='[data-position]'><input type='number' data-position/></div>"></div>
+<div ${itemProviderAttribute} data-prototype="<div ${itemAttribute} data-position-selector='[data-position]'><input type='number' data-position/></div>"></div>
 <div ${mainAttribute}></div>
 `;
 
@@ -55,7 +55,7 @@ test("Test adding item to the collection", () => {
 
 test("Test position calculation on item add", () => {
   document.body.innerHTML = `
-<div ${mainAddAttribute} data-prototype="<div ${itemAttribute} data-position-selector='[data-position]'><input type='number' data-position/></div>"></div>
+<div ${itemProviderAttribute} data-prototype="<div ${itemAttribute} data-position-selector='[data-position]'><input type='number' data-position/></div>"></div>
 <div ${mainAttribute}></div>
 `;
 

@@ -1,7 +1,7 @@
 export const mainAttribute = "data-js-wraplet-collection";
-export const mainAddAttribute = `${mainAttribute}-add`;
+export const itemProviderAttribute = `${mainAttribute}-add`;
 export const collectionSelector = `[${mainAttribute}]`;
-export const itemProviderSelector = `[${mainAddAttribute}]`;
+export const itemProviderSelector = `[${itemProviderAttribute}]`;
 export const itemAttribute = `${mainAttribute}--item`;
 export const itemSelector = `[${itemAttribute}]`;
 export const itemRemoveAttribute = `${mainAttribute}--item--remove`;

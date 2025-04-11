@@ -9,7 +9,7 @@ export {
   itemProviderSelector,
   collectionSelector,
   itemRemoveButtonSelector,
-  mainAddAttribute,
+  itemProviderAttribute,
   itemHandleSelector,
   itemAttribute,
 } from "./selectors";

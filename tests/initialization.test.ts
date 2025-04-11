@@ -9,7 +9,7 @@ import {
   CollectionItemProvider,
   itemAttribute,
 } from "../src";
-import { mainAttribute, mainAddAttribute } from "../src";
+import { mainAttribute, itemProviderAttribute } from "../src";
 
 test("Test collection initialization.", () => {
   document.body.innerHTML = `<div ${mainAttribute}></div>`;
@@ -19,7 +19,7 @@ test("Test collection initialization.", () => {
 });
 
 test("Test collection intem provider initialization.", () => {
-  document.body.innerHTML = `<div ${mainAddAttribute}></div>`;
+  document.body.innerHTML = `<div ${itemProviderAttribute}></div>`;
 
   const providers = CollectionItemProvider.create(document);
   expect(providers).toHaveLength(1);
