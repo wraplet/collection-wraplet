@@ -11,14 +11,14 @@ import {
 } from "../src";
 import { mainAttribute, itemProviderAttribute } from "../src";
 
-test("Test collection initialization.", () => {
+test("Test collection initialization", () => {
   document.body.innerHTML = `<div ${mainAttribute}></div>`;
 
   const collections = Collection.create(document);
   expect(collections).toHaveLength(1);
 });
 
-test("Test collection intem provider initialization.", () => {
+test("Test collection item provider initialization", () => {
   document.body.innerHTML = `<div ${itemProviderAttribute}></div>`;
 
   const providers = CollectionItemProvider.create(document);
