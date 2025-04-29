@@ -146,7 +146,7 @@ export default class Collection
     // This is a workaround for a weird issue with the attribute selector, that doesn't work
     // correctly in tests running in nodejs. The issue happens only if the attribute selector
     // is used to match direct children of the ":scope"
-    const attributeMatch = selector.match(/^:scope > \[(.+)]/);
+    const attributeMatch = selector.match(/^:scope > \[([a-z-]+)]/);
     if (attributeMatch) {
       let childrenWithAttributeCount: number = 0;
       for (const child of this.element.children) {
