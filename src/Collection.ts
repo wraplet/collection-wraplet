@@ -1,5 +1,9 @@
 import CollectionItemProvider from "./CollectionItemProvider";
-import { collectionSelector, itemSelector, mainAttribute } from "./selectors";
+import {
+  collectionSelector,
+  itemSelector,
+  mainAttribute
+} from "./selectors";
 import CollectionItem from "./CollectionItem";
 import Sortable from "sortablejs";
 import { AbstractWraplet, WrapletChildrenMap } from "wraplet";
@@ -138,8 +142,32 @@ export default class Collection
   }
 
   private syncChildren(recalculatePositions: boolean = true) {
-    const selector = `:scope > ${itemSelector}`;
-    const elements = this.element.querySelectorAll(selector);
+    const map = this.defineChildrenMap();
+    const selector: string = map.items.selector;
+    let elements = this.element.querySelectorAll(selector);
+
+    // @todo
+    // This is a workaround for a weird issue with the attribute selector, that doesn't work
+    // correctly in tests running in nodejs. The issue happens only if the attribute selector
+    // is used to match direct children of the ":scope"
+    const attributeMatch = selector.match(/^:scope > \[(.+)]/);
+    if (attributeMatch) {
+      let childrenWithAttributeCount: number = 0;
+      for (const child of this.element.children) {
+        if (child.hasAttribute(attributeMatch[1])) {
+          childrenWithAttributeCount++;
+        }
+      }
+
+      // If there is a mismatch between the children with the attribute and the elements found by
+      // the selector, tweak the selector and try again.
+      if (elements.length === 0 && childrenWithAttributeCount > 0) {
+        const attribute = attributeMatch[1];
+        const newSelector = selector.replace(attribute, `${attribute}=""`)
+        elements = this.element.querySelectorAll(newSelector);
+      }
+    }
+
     // Empty an items array.
     this.children.items.length = 0;
     for (const element of elements) {
