@@ -1,9 +1,5 @@
 import CollectionItemProvider from "./CollectionItemProvider";
-import {
-  collectionSelector,
-  itemSelector,
-  mainAttribute
-} from "./selectors";
+import { collectionSelector, itemSelector, mainAttribute } from "./selectors";
 import CollectionItem from "./CollectionItem";
 import Sortable from "sortablejs";
 import { AbstractWraplet, WrapletChildrenMap } from "wraplet";
@@ -163,7 +159,7 @@ export default class Collection
       // the selector, tweak the selector and try again.
       if (elements.length === 0 && childrenWithAttributeCount > 0) {
         const attribute = attributeMatch[1];
-        const newSelector = selector.replace(attribute, `${attribute}=""`)
+        const newSelector = selector.replace(attribute, `${attribute}=""`);
         elements = this.element.querySelectorAll(newSelector);
       }
     }
