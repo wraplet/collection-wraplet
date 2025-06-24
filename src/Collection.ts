@@ -13,6 +13,7 @@ type PositionCalculationListener = (
 interface Options {
   calculateInitialPositionOnInit?: boolean;
   positionsCalculationListeners?: PositionCalculationListener[];
+  sortable?: boolean;
 }
 
 const childrenMap = {
@@ -48,6 +49,7 @@ export default class Collection
     const defaultOptions: Required<Options> = {
       positionsCalculationListeners: [],
       calculateInitialPositionOnInit: false,
+      sortable: false,
     };
 
     const options = { ...defaultOptions, ...providedOptions };
@@ -65,7 +67,9 @@ export default class Collection
 
     this.syncChildren(options.calculateInitialPositionOnInit);
 
-    this.enableSortable();
+    if (options.sortable) {
+      this.enableSortable();
+    }
   }
 
   public setGroupExtractor(callback: GroupExtractor): void {
