@@ -1,7 +1,10 @@
-import { itemHandleSelector, itemRemoveButtonSelector } from "./selectors";
-import { AbstractWraplet } from "wraplet";
+import {
+  itemHandleSelector,
+  itemRemoveButtonSelector
+} from "./selectors";
+import {AbstractWraplet, WrapletChildrenMap} from "wraplet";
 
-export default class CollectionItem extends AbstractWraplet<any> {
+export default class CollectionItem extends AbstractWraplet<{}, Element> {
   public static handleSelector = itemHandleSelector;
   public static removeSelector = itemRemoveButtonSelector;
 
@@ -37,28 +40,26 @@ export default class CollectionItem extends AbstractWraplet<any> {
     return parseInt(positionValue);
   }
 
-  public getElement() {
-    return this.element;
-  }
-
   public getDOMPosition(): number {
-    const parentNode = this.element.parentNode;
+    const parentNode = this.node.parentNode;
     if (!parentNode) {
       throw new Error(
         "Couldn't get the actual position because parentNode couldn't be found.",
       );
     }
-    return Array.from(parentNode.children).indexOf(this.element);
+    return Array.from(parentNode.children).indexOf(this.node);
   }
 
   public remove(): void {
     for (const listener of this.removeListeners) {
       listener(this);
     }
-    this.element.remove();
+    this.node.remove();
+
+    this.destroy();
   }
 
-  protected defineChildrenMap(): any {
+  protected defineChildrenMap(): {} {
     return {};
   }
 
@@ -69,14 +70,14 @@ export default class CollectionItem extends AbstractWraplet<any> {
   }
 
   private getPositionElement(): Element {
-    const positionSelector = this.element.getAttribute(
+    const positionSelector = this.node.getAttribute(
       "data-position-selector",
     );
     if (!positionSelector) {
       throw new Error(`Unknown position selector.`);
     }
 
-    const positionElement = this.element.querySelector(`${positionSelector}`);
+    const positionElement = this.node.querySelector(`${positionSelector}`);
     if (!positionElement) {
       throw new Error(`Missing position element.`);
     }

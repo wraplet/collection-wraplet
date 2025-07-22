@@ -25,7 +25,7 @@ const childrenMap = {
     multiple: true,
   },
   items: {
-    selector: `:scope > ${itemSelector}`,
+    selector: itemSelector,
     Class: CollectionItem,
     required: false,
     multiple: true,
@@ -43,7 +43,9 @@ export default class Collection
   private groupExtractorCallback: GroupExtractor = (element: Element) =>
     element.getAttribute(mainAttribute);
 
-  constructor(element: HTMLElement, providedOptions: Options = {}) {
+  private sortable: Sortable | null = null;
+
+  constructor(element: HTMLElement, constructorOptions: Options = {}) {
     super(element);
 
     const defaultOptions: Required<Options> = {
@@ -52,7 +54,10 @@ export default class Collection
       sortable: false,
     };
 
-    const options = { ...defaultOptions, ...providedOptions };
+    const htmlOptionsString = this.node.getAttribute(mainAttribute) || '{}';
+    const htmlOptions = this.parseHTMLOptions(htmlOptionsString);
+
+    const options = { ...defaultOptions, ...constructorOptions, ...htmlOptions };
 
     if (options.positionsCalculationListeners) {
       this.positionsCalculationListeners =
@@ -68,7 +73,7 @@ export default class Collection
     this.syncChildren(options.calculateInitialPositionOnInit);
 
     if (options.sortable) {
-      this.enableSortable();
+      this.sortable = this.initSortable();
     }
   }
 
@@ -77,7 +82,7 @@ export default class Collection
   }
 
   public getGroup(): string | null {
-    return this.groupExtractorCallback(this.element);
+    return this.groupExtractorCallback(this.node);
   }
 
   public addListenerItemAdded(listener: (item: CollectionItem) => void) {
@@ -99,11 +104,28 @@ export default class Collection
 
   public addItem(item: CollectionItem) {
     item.setPosition(this.getHighestPosition() + 1);
-    this.element.append(item.getElement());
+    item.accessNode((node: Node) => {
+      this.node.append(node);
+    })
     this.children.items.push(item);
     for (const listener of this.itemAddedListeners) {
       listener(item);
     }
+  }
+
+  public isSortable(): boolean {
+    return this.sortable !== null;
+  }
+
+  private parseHTMLOptions(htmlOptions: string): Options {
+    // We run this first to check if we deal with a valid JSON.
+    const jsonOptions = JSON.parse(htmlOptions);
+    // Now we check if JSON was an object.
+    if (htmlOptions.charAt(0) !== "{") {
+      throw new Error(`JSON options have to be passed as an object.`);
+    }
+
+    return jsonOptions;
   }
 
   private createItem(element: Element): CollectionItem {
@@ -126,11 +148,11 @@ export default class Collection
     return childrenMap;
   }
 
-  private enableSortable(): void {
+  private initSortable(): Sortable {
     // Fixing the text on the elements below getting selected during drag.
-    this.element.style.setProperty("user-select", "none");
+    this.node.style.setProperty("user-select", "none");
     // Make the container sortable.
-    new Sortable(this.element, {
+    return new Sortable(this.node, {
       handle: CollectionItem.handleSelector,
       draggable: itemSelector,
       ghostClass: "sortable-ghost",
@@ -142,9 +164,9 @@ export default class Collection
   }
 
   private syncChildren(recalculatePositions: boolean = true) {
-    const map = this.defineChildrenMap();
+    const map = this.core.map;
     const selector: string = map.items.selector;
-    let elements = this.element.querySelectorAll(selector);
+    let elements = this.node.querySelectorAll(selector);
 
     // @todo
     // This is a workaround for a weird issue with the attribute selector, that doesn't work
@@ -153,7 +175,7 @@ export default class Collection
     const attributeMatch = selector.match(/^:scope > \[([a-z-]+)]/);
     if (attributeMatch) {
       let childrenWithAttributeCount: number = 0;
-      for (const child of this.element.children) {
+      for (const child of this.node.children) {
         if (child.hasAttribute(attributeMatch[1])) {
           childrenWithAttributeCount++;
         }
@@ -164,7 +186,7 @@ export default class Collection
       if (elements.length === 0 && childrenWithAttributeCount > 0) {
         const attribute = attributeMatch[1];
         const newSelector = selector.replace(attribute, `${attribute}=""`);
-        elements = this.element.querySelectorAll(newSelector);
+        elements = this.node.querySelectorAll(newSelector);
       }
     }
 
@@ -209,9 +231,9 @@ export default class Collection
   }
 
   public static create(
-    document: Document,
+    node: ParentNode,
     options: Options = {},
   ): Collection[] {
-    return this.createWraplets(document, [options], collectionSelector);
+    return this.createWraplets(node, collectionSelector, [options]);
   }
 }

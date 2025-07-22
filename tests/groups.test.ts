@@ -1,6 +1,3 @@
-/**
- * @jest-environment jsdom
- */
 import "./setup";
 import {
   mainAttribute,
@@ -10,7 +7,7 @@ import {
   itemProviderSelector,
 } from "../src";
 
-function createSingleCollection(): Collection {
+function createSingleCollection(document: Document): Collection {
   const collections = Collection.create(document);
   if (!collections[0]) {
     throw new Error("Collections not found.");
@@ -32,7 +29,7 @@ test("Test the default group extractor callback", () => {
 <div ${mainAttribute}="1"></div>
 `;
 
-  const collection = createSingleCollection();
+  const collection = createSingleCollection(document);
   expect(collection.getGroup()).toBe("1");
 
   const itemProvider = createSingleItemProvider();
@@ -49,7 +46,7 @@ test("Test the custom group extractor callback", () => {
     return element.getAttribute("data-group");
   };
 
-  const collection = createSingleCollection();
+  const collection = createSingleCollection(document);
   collection.setGroupExtractor(customGroupExtractor);
   expect(collection.getGroup()).toBe("1");
 

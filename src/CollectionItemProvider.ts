@@ -5,7 +5,7 @@ import { Groupable, GroupExtractor } from "./Groupable";
 const childrenMap = {} as const satisfies WrapletChildrenMap;
 
 export default class CollectionItemProvider
-  extends AbstractWraplet<typeof childrenMap>
+  extends AbstractWraplet<typeof childrenMap, Element>
   implements Groupable
 {
   private prototypeAttribute: string = "data-prototype";
@@ -22,11 +22,11 @@ export default class CollectionItemProvider
   }
 
   public getGroup(): string | null {
-    return this.groupExtractorCallback(this.element);
+    return this.groupExtractorCallback(this.node);
   }
 
   public addListener(listener: (element: Element) => void): void {
-    this.element.addEventListener("click", () => {
+    this.node.addEventListener("click", () => {
       const prototype = this.getPrototype();
       const newElement = this.createItemFromString(prototype);
       listener(newElement);
@@ -34,7 +34,7 @@ export default class CollectionItemProvider
   }
 
   private getPrototype(): string {
-    const prototype = this.element.getAttribute(this.prototypeAttribute);
+    const prototype = this.node.getAttribute(this.prototypeAttribute);
     if (!prototype) {
       throw new Error(`Missing attribute ${this.prototypeAttribute}.`);
     }
@@ -59,6 +59,6 @@ export default class CollectionItemProvider
     document: Document,
     additional_args: unknown[] = [],
   ): CollectionItemProvider[] {
-    return this.createWraplets(document, additional_args, itemProviderSelector);
+    return this.createWraplets(document, itemProviderSelector, additional_args);
   }
 }

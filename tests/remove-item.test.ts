@@ -1,6 +1,3 @@
-/**
- * @jest-environment jsdom
- */
 import "./setup";
 
 import {
@@ -16,7 +13,12 @@ import { addItemToCollectionByAddProvider } from "./add-item.test";
 
 test("Test removing items from the collection", () => {
   document.body.innerHTML = `
-<div ${mainAttribute}><div ${itemAttribute} data-position-selector='[data-position]'><input type='number' data-position/><div ${itemRemoveAttribute}></div></div></div>
+<div ${mainAttribute}>
+    <div ${itemAttribute} data-position-selector='[data-position]'>
+        <input type='number' data-position/>
+        <div ${itemRemoveAttribute}></div>
+    </div>
+</div>
 `;
 
   Collection.create(document);
