@@ -10,10 +10,11 @@ type PositionCalculationListener = (
   index: number,
 ) => void;
 
-interface Options {
+export interface CollectionOptions {
   calculateInitialPositionOnInit?: boolean;
   positionsCalculationListeners?: PositionCalculationListener[];
   sortable?: boolean;
+  groupAttribute?: string;
 }
 
 const childrenMap = {
@@ -36,43 +37,48 @@ export default class Collection
   extends AbstractWraplet<typeof childrenMap, HTMLElement>
   implements Groupable
 {
+  public static defaultGroupAttribute = "data-group";
   private readonly itemAddedListeners: ((item: CollectionItem) => void)[] = [];
   private readonly positionsCalculationListeners: PositionCalculationListener[] =
     [];
 
   private groupExtractorCallback: GroupExtractor = (element: Element) =>
-    element.getAttribute(mainAttribute);
+    element.getAttribute(this.options.groupAttribute);
 
   private sortable: Sortable | null = null;
+  private options: Required<CollectionOptions>;
 
-  constructor(element: HTMLElement, constructorOptions: Options = {}) {
+  constructor(element: HTMLElement, constructorOptions: CollectionOptions = {}) {
     super(element);
 
-    const defaultOptions: Required<Options> = {
+    const defaultOptions: Required<CollectionOptions> = {
       positionsCalculationListeners: [],
       calculateInitialPositionOnInit: false,
       sortable: false,
+      groupAttribute: Collection.defaultGroupAttribute,
     };
 
     const htmlOptionsString = this.node.getAttribute(mainAttribute) || '{}';
     const htmlOptions = this.parseHTMLOptions(htmlOptionsString);
 
-    const options = { ...defaultOptions, ...constructorOptions, ...htmlOptions };
+    this.options = { ...defaultOptions, ...constructorOptions, ...htmlOptions };
 
-    if (options.positionsCalculationListeners) {
+    if (this.options.positionsCalculationListeners) {
       this.positionsCalculationListeners =
-        options.positionsCalculationListeners;
+        this.options.positionsCalculationListeners;
     }
 
     for (const item of this.children.items) {
       item.addRemoveListener(() => {
-        this.syncChildren();
+        this.recalculatePositions();
       });
     }
 
-    this.syncChildren(options.calculateInitialPositionOnInit);
+    if (this.options.calculateInitialPositionOnInit) {
+      this.recalculatePositions();
+    }
 
-    if (options.sortable) {
+    if (this.options.sortable) {
       this.sortable = this.initSortable();
     }
   }
@@ -117,7 +123,7 @@ export default class Collection
     return this.sortable !== null;
   }
 
-  private parseHTMLOptions(htmlOptions: string): Options {
+  private parseHTMLOptions(htmlOptions: string): CollectionOptions {
     // We run this first to check if we deal with a valid JSON.
     const jsonOptions = JSON.parse(htmlOptions);
     // Now we check if JSON was an object.
@@ -158,58 +164,9 @@ export default class Collection
       ghostClass: "sortable-ghost",
       dragClass: "sortable-drag",
       onUpdate: () => {
-        this.syncChildren();
+        this.recalculatePositions();
       },
     });
-  }
-
-  private syncChildren(recalculatePositions: boolean = true) {
-    const map = this.core.map;
-    const selector: string = map.items.selector;
-    let elements = this.node.querySelectorAll(selector);
-
-    // @todo
-    // This is a workaround for a weird issue with the attribute selector, that doesn't work
-    // correctly in tests running in nodejs. The issue happens only if the attribute selector
-    // is used to match direct children of the ":scope"
-    const attributeMatch = selector.match(/^:scope > \[([a-z-]+)]/);
-    if (attributeMatch) {
-      let childrenWithAttributeCount: number = 0;
-      for (const child of this.node.children) {
-        if (child.hasAttribute(attributeMatch[1])) {
-          childrenWithAttributeCount++;
-        }
-      }
-
-      // If there is a mismatch between the children with the attribute and the elements found by
-      // the selector, tweak the selector and try again.
-      if (elements.length === 0 && childrenWithAttributeCount > 0) {
-        const attribute = attributeMatch[1];
-        const newSelector = selector.replace(attribute, `${attribute}=""`);
-        elements = this.node.querySelectorAll(newSelector);
-      }
-    }
-
-    // Empty an items array.
-    this.children.items.length = 0;
-    for (const element of elements) {
-      const wraplets = element.wraplets;
-      let collectionItem: CollectionItem | undefined = undefined;
-      if (
-        !Array.isArray(wraplets) ||
-        !(collectionItem = wraplets.find(
-          (element) => element instanceof CollectionItem,
-        ))
-      ) {
-        throw new Error(
-          `${this.constructor.name}: Unknown element has been added to the collection.`,
-        );
-      }
-      this.children.items.push(collectionItem);
-    }
-    if (recalculatePositions) {
-      this.recalculatePositions();
-    }
   }
 
   public addPositionsCalculationListener(
@@ -232,7 +189,7 @@ export default class Collection
 
   public static create(
     node: ParentNode,
-    options: Options = {},
+    options: CollectionOptions = {},
   ): Collection[] {
     return this.createWraplets(node, collectionSelector, [options]);
   }

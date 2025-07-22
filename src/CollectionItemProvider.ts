@@ -1,6 +1,11 @@
-import { itemProviderSelector, itemProviderAttribute } from "./selectors";
+import { itemProviderSelector } from "./selectors";
 import { AbstractWraplet, WrapletChildrenMap } from "wraplet";
 import { Groupable, GroupExtractor } from "./Groupable";
+import Collection from "./Collection";
+
+export interface CollectionItemProviderOptions {
+  groupAttribute?: string;
+}
 
 const childrenMap = {} as const satisfies WrapletChildrenMap;
 
@@ -9,12 +14,17 @@ export default class CollectionItemProvider
   implements Groupable
 {
   private prototypeAttribute: string = "data-prototype";
+  private options: Required<CollectionItemProviderOptions>;
 
   private groupExtractorCallback: GroupExtractor = (element: Element) =>
-    element.getAttribute(itemProviderAttribute);
+    element.getAttribute(this.options.groupAttribute);
 
-  constructor(element: Element) {
+  constructor(element: Element, options: CollectionItemProviderOptions = {}) {
     super(element);
+    const defaultOptions: Required<CollectionItemProviderOptions> = {
+      groupAttribute: Collection.defaultGroupAttribute,
+    }
+    this.options = { ...defaultOptions, ...options };
   }
 
   public setGroupExtractor(callback: GroupExtractor): void {
