@@ -48,10 +48,7 @@ export default class Collection
   private sortable: Sortable | null = null;
   private options: Required<CollectionOptions>;
 
-  constructor(
-    element: HTMLElement,
-    constructorOptions: CollectionOptions = {},
-  ) {
+  constructor(element: HTMLElement, options: CollectionOptions = {}) {
     super(element);
 
     const defaultOptions: Required<CollectionOptions> = {
@@ -64,7 +61,7 @@ export default class Collection
     const htmlOptionsString = this.node.getAttribute(mainAttribute) || "{}";
     const htmlOptions = this.parseHTMLOptions(htmlOptionsString);
 
-    this.options = { ...defaultOptions, ...constructorOptions, ...htmlOptions };
+    this.options = { ...defaultOptions, ...options, ...htmlOptions };
 
     if (this.options.positionsCalculationListeners) {
       this.positionsCalculationListeners =

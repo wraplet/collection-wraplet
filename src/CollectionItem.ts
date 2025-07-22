@@ -1,14 +1,31 @@
-import { itemHandleSelector, itemRemoveButtonSelector } from "./selectors";
+import {
+  itemAttribute,
+  itemHandleSelector,
+  itemRemoveButtonSelector,
+} from "./selectors";
 import { AbstractWraplet, destroyWrapletsRecursively } from "wraplet";
+
+export type CollectionItemOptions = {
+  positionSelector?: string;
+};
 
 export default class CollectionItem extends AbstractWraplet<{}, Element> {
   public static handleSelector = itemHandleSelector;
   public static removeSelector = itemRemoveButtonSelector;
 
   private deleteListeners: ((item: CollectionItem) => void)[] = [];
+  private options: Required<CollectionItemOptions>;
 
-  constructor(element: Element) {
+  constructor(element: Element, options: CollectionItemOptions = {}) {
     super(element);
+    const defaultOptions: Required<CollectionItemOptions> = {
+      positionSelector: "[data-position]",
+    };
+    const htmlOptionsString = this.node.getAttribute(itemAttribute) || "{}";
+    const htmlOptions = this.parseHTMLOptions(htmlOptionsString);
+
+    this.options = { ...defaultOptions, ...options, ...htmlOptions };
+
     const removeElements = element.querySelectorAll(
       CollectionItem.removeSelector,
     );
@@ -68,16 +85,24 @@ export default class CollectionItem extends AbstractWraplet<{}, Element> {
   }
 
   private getPositionElement(): Element {
-    const positionSelector = this.node.getAttribute("data-position-selector");
-    if (!positionSelector) {
-      throw new Error(`Unknown position selector.`);
-    }
-
-    const positionElement = this.node.querySelector(`${positionSelector}`);
+    const positionElement = this.node.querySelector(
+      this.options.positionSelector,
+    );
     if (!positionElement) {
       throw new Error(`Missing position element.`);
     }
 
     return positionElement;
+  }
+
+  private parseHTMLOptions(htmlOptions: string): CollectionItemOptions {
+    // We run this first to check if we deal with a valid JSON.
+    const jsonOptions = JSON.parse(htmlOptions);
+    // Now we check if JSON was an object.
+    if (htmlOptions.charAt(0) !== "{") {
+      throw new Error(`JSON options have to be passed as an object.`);
+    }
+
+    return jsonOptions;
   }
 }

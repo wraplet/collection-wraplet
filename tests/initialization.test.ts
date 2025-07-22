@@ -25,8 +25,8 @@ test("Test collection item provider initialization", () => {
 test("Test initial default position calculation", () => {
   document.body.innerHTML = `
 <div ${mainAttribute}>
-    <div ${itemAttribute} data-position-selector='[data-position]'><input type='number' data-position/></div>
-    <div ${itemAttribute} data-position-selector='[data-position]'><input type='number' data-position/></div>
+    <div ${itemAttribute}><input type='number' data-position/></div>
+    <div ${itemAttribute}><input type='number' data-position/></div>
 </div>
 `;
 
@@ -47,8 +47,8 @@ test("Test initial default position calculation", () => {
 test("Test initial position calculation altered", () => {
   document.body.innerHTML = `
 <div ${mainAttribute}>
-    <div ${itemAttribute} data-position-selector='[data-position]'><input type='number' data-position/></div>
-    <div ${itemAttribute} data-position-selector='[data-position]'><input type='number' data-position/></div>
+    <div ${itemAttribute}><input type='number' data-position/></div>
+    <div ${itemAttribute}><input type='number' data-position/></div>
 </div>
 `;
 
@@ -69,4 +69,21 @@ test("Test initial position calculation altered", () => {
   }
 
   expect(itemsPositions).toEqual([1, 2]);
+});
+
+test("Test collection options html override", () => {
+  document.body.innerHTML = `
+<div ${mainAttribute}='{"sortable": false}'></div>
+`;
+
+  const collections = Collection.create(document, {
+    sortable: true,
+  });
+
+  if (!collections[0]) {
+    throw new Error("Collections not found.");
+  }
+  const collection = collections[0];
+
+  expect(collection.isSortable()).toBe(false);
 });
