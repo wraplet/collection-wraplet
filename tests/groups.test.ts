@@ -4,10 +4,15 @@ import {
   Collection,
   itemProviderAttribute,
   CollectionItemProvider,
-  itemProviderSelector, CollectionOptions, CollectionItemProviderOptions,
+  itemProviderSelector,
+  CollectionOptions,
+  CollectionItemProviderOptions,
 } from "../src";
 
-function createSingleCollection(document: Document, options: CollectionOptions = {}): Collection {
+function createSingleCollection(
+  document: Document,
+  options: CollectionOptions = {},
+): Collection {
   const collections = Collection.create(document, options);
   if (!collections[0]) {
     throw new Error("Collections not found.");
@@ -15,7 +20,9 @@ function createSingleCollection(document: Document, options: CollectionOptions =
   return collections[0];
 }
 
-function createSingleItemProvider(options: CollectionItemProviderOptions = {}): CollectionItemProvider {
+function createSingleItemProvider(
+  options: CollectionItemProviderOptions = {},
+): CollectionItemProvider {
   const addElement = document.querySelector(itemProviderSelector) as Element;
   if (!addElement) {
     throw new Error("Add element not found.");
@@ -62,15 +69,18 @@ test("Test the custom group attribute", () => {
 <div ${mainAttribute} ${customGroupAttribute}="1"></div>
 `;
 
-  const collections = Collection.create(document, {groupAttribute: customGroupAttribute });
+  const collections = Collection.create(document, {
+    groupAttribute: customGroupAttribute,
+  });
   if (!collections[0]) {
     throw new Error("Collections not found.");
   }
   const collection = collections[0];
 
-
   expect(collection.getGroup()).toBe("1");
 
-  const itemProvider = createSingleItemProvider({groupAttribute: customGroupAttribute});
+  const itemProvider = createSingleItemProvider({
+    groupAttribute: customGroupAttribute,
+  });
   expect(itemProvider.getGroup()).toBe("1");
 });

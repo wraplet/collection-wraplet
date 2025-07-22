@@ -23,7 +23,7 @@ export default class CollectionItemProvider
     super(element);
     const defaultOptions: Required<CollectionItemProviderOptions> = {
       groupAttribute: Collection.defaultGroupAttribute,
-    }
+    };
     this.options = { ...defaultOptions, ...options };
   }
 

@@ -1,10 +1,6 @@
 import "./setup";
-import {
-    mainAttribute,
-    Collection, itemAttribute, itemSelector
-} from "../src";
-import {itemHandleAttribute} from "../src/selectors";
-
+import { mainAttribute, Collection, itemAttribute } from "../src";
+import { itemHandleAttribute } from "../src/selectors";
 
 test("Test sortable can be enabled with html options", () => {
   document.body.innerHTML = `

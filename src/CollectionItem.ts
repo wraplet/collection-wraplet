@@ -1,8 +1,5 @@
-import {
-  itemHandleSelector,
-  itemRemoveButtonSelector
-} from "./selectors";
-import {AbstractWraplet, WrapletChildrenMap} from "wraplet";
+import { itemHandleSelector, itemRemoveButtonSelector } from "./selectors";
+import { AbstractWraplet } from "wraplet";
 
 export default class CollectionItem extends AbstractWraplet<{}, Element> {
   public static handleSelector = itemHandleSelector;
@@ -70,9 +67,7 @@ export default class CollectionItem extends AbstractWraplet<{}, Element> {
   }
 
   private getPositionElement(): Element {
-    const positionSelector = this.node.getAttribute(
-      "data-position-selector",
-    );
+    const positionSelector = this.node.getAttribute("data-position-selector");
     if (!positionSelector) {
       throw new Error(`Unknown position selector.`);
     }

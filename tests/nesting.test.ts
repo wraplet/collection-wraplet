@@ -1,10 +1,11 @@
 import "./setup";
 import {
   mainAttribute,
-  Collection, itemAttribute, itemHandleSelector, itemSelector, collectionSelector,
+  Collection,
+  itemAttribute,
+  itemHandleSelector,
 } from "../src";
-import {itemHandleAttribute} from "../src/selectors";
-
+import { itemHandleAttribute } from "../src/selectors";
 
 test("Test nesting", () => {
   const topCollectionClass = "top-collection";
@@ -25,7 +26,7 @@ test("Test nesting", () => {
 </div>
 `;
 
-  const collections = Collection.create(document, {sortable: true});
+  const collections = Collection.create(document, { sortable: true });
   for (const collection of collections) {
     // Make sure collections get the correct items.
     expect(collection.getItems()).toHaveLength(1);

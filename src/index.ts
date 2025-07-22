@@ -5,7 +5,7 @@ import CollectionItemProvider from "./CollectionItemProvider";
 import { CollectionOptions } from "./Collection";
 import { CollectionItemProviderOptions } from "./CollectionItemProvider";
 
-export {Collection, CollectionItem, CollectionItemProvider};
+export { Collection, CollectionItem, CollectionItemProvider };
 export type { CollectionOptions, CollectionItemProviderOptions };
 export {
   itemSelector,

@@ -48,7 +48,10 @@ export default class Collection
   private sortable: Sortable | null = null;
   private options: Required<CollectionOptions>;
 
-  constructor(element: HTMLElement, constructorOptions: CollectionOptions = {}) {
+  constructor(
+    element: HTMLElement,
+    constructorOptions: CollectionOptions = {},
+  ) {
     super(element);
 
     const defaultOptions: Required<CollectionOptions> = {
@@ -58,7 +61,7 @@ export default class Collection
       groupAttribute: Collection.defaultGroupAttribute,
     };
 
-    const htmlOptionsString = this.node.getAttribute(mainAttribute) || '{}';
+    const htmlOptionsString = this.node.getAttribute(mainAttribute) || "{}";
     const htmlOptions = this.parseHTMLOptions(htmlOptionsString);
 
     this.options = { ...defaultOptions, ...constructorOptions, ...htmlOptions };
@@ -112,7 +115,7 @@ export default class Collection
     item.setPosition(this.getHighestPosition() + 1);
     item.accessNode((node: Node) => {
       this.node.append(node);
-    })
+    });
     this.children.items.push(item);
     for (const listener of this.itemAddedListeners) {
       listener(item);
