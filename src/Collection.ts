@@ -72,7 +72,7 @@ export default class Collection
     }
 
     for (const item of this.children.items) {
-      item.addRemoveListener(() => {
+      item.addDeleteListener(() => {
         this.recalculatePositions();
       });
     }

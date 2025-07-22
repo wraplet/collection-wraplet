@@ -1,11 +1,11 @@
 import { itemHandleSelector, itemRemoveButtonSelector } from "./selectors";
-import { AbstractWraplet } from "wraplet";
+import { AbstractWraplet, destroyWrapletsRecursively } from "wraplet";
 
 export default class CollectionItem extends AbstractWraplet<{}, Element> {
   public static handleSelector = itemHandleSelector;
   public static removeSelector = itemRemoveButtonSelector;
 
-  private removeListeners: ((item: CollectionItem) => void)[] = [];
+  private deleteListeners: ((item: CollectionItem) => void)[] = [];
 
   constructor(element: Element) {
     super(element);
@@ -17,8 +17,8 @@ export default class CollectionItem extends AbstractWraplet<{}, Element> {
     }
   }
 
-  public addRemoveListener(listener: (item: CollectionItem) => void) {
-    this.removeListeners.push(listener);
+  public addDeleteListener(listener: (item: CollectionItem) => void) {
+    this.deleteListeners.push(listener);
   }
 
   public setPosition(index: number): void {
@@ -47,13 +47,14 @@ export default class CollectionItem extends AbstractWraplet<{}, Element> {
     return Array.from(parentNode.children).indexOf(this.node);
   }
 
-  public remove(): void {
-    for (const listener of this.removeListeners) {
+  public delete(): void {
+    for (const listener of this.deleteListeners) {
       listener(this);
     }
     this.node.remove();
 
     this.destroy();
+    destroyWrapletsRecursively(this.node);
   }
 
   protected defineChildrenMap(): {} {
@@ -62,7 +63,7 @@ export default class CollectionItem extends AbstractWraplet<{}, Element> {
 
   private registerRemoveButton(element: Element) {
     element.addEventListener("click", () => {
-      this.remove();
+      this.delete();
     });
   }
 
