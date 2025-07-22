@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lukasz-zaroda/collection-wraplet.git"
+    "url": "https://github.com/wraplet/collection-wraplet.git"
   },
   "scripts": {
     "setup": "yarn install",
