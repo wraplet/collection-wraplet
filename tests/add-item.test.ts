@@ -57,7 +57,7 @@ test("Test position calculation on item add", () => {
 `;
 
   const collections = Collection.create(document, {
-    positionsCalculationListeners: [
+    positionsCalculatedListeners: [
       (item: CollectionItem, index: number): void => {
         item.setPosition(index + 1);
       },

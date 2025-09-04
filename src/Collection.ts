@@ -1,18 +1,20 @@
 import CollectionItemProvider from "./CollectionItemProvider";
-import { collectionSelector, itemSelector, mainAttribute } from "./selectors";
+import { itemSelector, mainAttribute } from "./selectors";
 import CollectionItem from "./CollectionItem";
 import Sortable from "sortablejs";
-import { AbstractWraplet, WrapletChildrenMap } from "wraplet";
+import {
+  AbstractWraplet,
+  StorageValidators,
+  WrapletChildrenMap,
+} from "wraplet";
 import { Groupable, GroupExtractor } from "./Groupable";
+import { ElementStorage } from "wraplet/storage";
 
-type PositionCalculationListener = (
-  item: CollectionItem,
-  index: number,
-) => void;
+type PositionCalculatedListener = (item: CollectionItem, index: number) => void;
 
-export interface CollectionOptions {
+export interface CollectionOptions extends Record<string, unknown> {
   calculateInitialPositionOnInit?: boolean;
-  positionsCalculationListeners?: PositionCalculationListener[];
+  positionsCalculatedListeners?: PositionCalculatedListener[];
   sortable?: boolean;
   groupAttribute?: string;
 }
@@ -39,7 +41,7 @@ export default class Collection
 {
   public static defaultGroupAttribute = "data-group";
   private readonly itemAddedListeners: ((item: CollectionItem) => void)[] = [];
-  private readonly positionsCalculationListeners: PositionCalculationListener[] =
+  private readonly positionsCalculatedListeners: PositionCalculatedListener[] =
     [];
 
   private groupExtractorCallback: GroupExtractor = (element: Element) =>
@@ -52,20 +54,31 @@ export default class Collection
     super(element);
 
     const defaultOptions: Required<CollectionOptions> = {
-      positionsCalculationListeners: [],
+      positionsCalculatedListeners: [],
       calculateInitialPositionOnInit: false,
       sortable: false,
       groupAttribute: Collection.defaultGroupAttribute,
     };
 
-    const htmlOptionsString = this.node.getAttribute(mainAttribute) || "{}";
-    const htmlOptions = this.parseHTMLOptions(htmlOptionsString);
+    const validators: StorageValidators<typeof defaultOptions> = {
+      positionsCalculatedListeners: (item) => Array.isArray(item),
+      calculateInitialPositionOnInit: (item) => typeof item === "boolean",
+      sortable: (item) => typeof item === "boolean",
+      groupAttribute: (item) => typeof item === "string",
+    };
 
-    this.options = { ...defaultOptions, ...options, ...htmlOptions };
+    const storage = new ElementStorage<Required<CollectionOptions>>(
+      element,
+      mainAttribute,
+      { ...defaultOptions, ...options },
+      validators,
+    );
 
-    if (this.options.positionsCalculationListeners) {
-      this.positionsCalculationListeners =
-        this.options.positionsCalculationListeners;
+    this.options = storage.getAll();
+
+    if (this.options.positionsCalculatedListeners) {
+      this.positionsCalculatedListeners =
+        this.options.positionsCalculatedListeners;
     }
 
     for (const item of this.children.items) {
@@ -91,7 +104,7 @@ export default class Collection
     return this.groupExtractorCallback(this.node);
   }
 
-  public addListenerItemAdded(listener: (item: CollectionItem) => void) {
+  public addItemAddedListener(listener: (item: CollectionItem) => void) {
     this.itemAddedListeners.push(listener);
   }
 
@@ -101,19 +114,22 @@ export default class Collection
       this.addItem(item);
     });
 
-    this.children.itemProviders.push(item);
+    this.children.itemProviders.add(item);
   }
 
   public getItems(): CollectionItem[] {
-    return this.children.items;
+    return this.children.items.getOrdered((item: CollectionItem) => {
+      return item.getPosition();
+    });
   }
 
   public addItem(item: CollectionItem) {
-    item.setPosition(this.getHighestPosition() + 1);
     item.accessNode((node: Node) => {
       this.node.append(node);
     });
-    this.children.items.push(item);
+
+    this.children.items.add(item);
+    this.recalculatePositions();
     for (const listener of this.itemAddedListeners) {
       listener(item);
     }
@@ -123,31 +139,8 @@ export default class Collection
     return this.sortable !== null;
   }
 
-  private parseHTMLOptions(htmlOptions: string): CollectionOptions {
-    // We run this first to check if we deal with a valid JSON.
-    const jsonOptions = JSON.parse(htmlOptions);
-    // Now we check if JSON was an object.
-    if (htmlOptions.charAt(0) !== "{") {
-      throw new Error(`JSON options have to be passed as an object.`);
-    }
-
-    return jsonOptions;
-  }
-
   private createItem(element: Element): CollectionItem {
     return new CollectionItem(element);
-  }
-
-  private getHighestPosition(): number {
-    const items = this.children.items;
-    let highestPosition = 0;
-    for (const item of items) {
-      if (item.getPosition() > highestPosition) {
-        highestPosition = item.getPosition();
-      }
-    }
-
-    return highestPosition;
   }
 
   protected defineChildrenMap(): typeof childrenMap {
@@ -169,19 +162,22 @@ export default class Collection
     });
   }
 
-  public addPositionsCalculationListener(
+  public addPositionsCalculatedListener(
     callback: (item: CollectionItem, index: number) => void,
   ): void {
-    this.positionsCalculationListeners.push(callback);
+    this.positionsCalculatedListeners.push(callback);
   }
 
   private recalculatePositions(): void {
-    this.children.items.sort((a, b) => {
-      return a.getDOMPosition() - b.getDOMPosition();
-    });
-    for (const [index, item] of this.children.items.entries()) {
+    for (const item of this.children.items.values()) {
+      const index: number = item.getDOMPosition();
+
+      if (!item.hasPosition()) {
+        continue;
+      }
+
       item.setPosition(index);
-      for (const listener of this.positionsCalculationListeners) {
+      for (const listener of this.positionsCalculatedListeners) {
         listener(item, index);
       }
     }
@@ -191,6 +187,6 @@ export default class Collection
     node: ParentNode,
     options: CollectionOptions = {},
   ): Collection[] {
-    return this.createWraplets(node, collectionSelector, [options]);
+    return this.createWraplets(node, mainAttribute, [options]);
   }
 }

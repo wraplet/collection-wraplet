@@ -3,7 +3,12 @@ import {
   itemHandleSelector,
   itemRemoveButtonSelector,
 } from "./selectors";
-import { AbstractWraplet, destroyWrapletsRecursively } from "wraplet";
+import {
+  AbstractWraplet,
+  destroyWrapletsRecursively,
+  StorageValidators,
+} from "wraplet";
+import { ElementStorage } from "wraplet/storage";
 
 export type CollectionItemOptions = {
   positionSelector?: string;
@@ -21,10 +26,19 @@ export default class CollectionItem extends AbstractWraplet<{}, Element> {
     const defaultOptions: Required<CollectionItemOptions> = {
       positionSelector: "[data-position]",
     };
-    const htmlOptionsString = this.node.getAttribute(itemAttribute) || "{}";
-    const htmlOptions = this.parseHTMLOptions(htmlOptionsString);
 
-    this.options = { ...defaultOptions, ...options, ...htmlOptions };
+    const validators: StorageValidators<CollectionItemOptions> = {
+      positionSelector: (item) => typeof item === "string",
+    };
+
+    const storage = new ElementStorage<Required<CollectionItemOptions>>(
+      element,
+      itemAttribute,
+      { ...defaultOptions, ...options },
+      validators,
+    );
+
+    this.options = storage.getAll();
 
     const removeElements = element.querySelectorAll(
       CollectionItem.removeSelector,
@@ -40,26 +54,33 @@ export default class CollectionItem extends AbstractWraplet<{}, Element> {
 
   public setPosition(index: number): void {
     const positionElement = this.getPositionElement();
+    if (!positionElement) {
+      throw new Error("Position element not found.");
+    }
     positionElement.setAttribute("value", String(index));
   }
 
   public getPosition(): number {
     const positionElement = this.getPositionElement();
-
+    if (!positionElement) {
+      throw new Error("Position element not found.");
+    }
     const positionValue = positionElement.getAttribute("value");
     if (!positionValue) {
-      throw new Error("Couldn't get the position value.");
+      throw new Error("No position value.");
     }
 
     return parseInt(positionValue);
   }
 
+  public hasPosition(): boolean {
+    return Boolean(this.getPositionElement());
+  }
+
   public getDOMPosition(): number {
     const parentNode = this.node.parentNode;
     if (!parentNode) {
-      throw new Error(
-        "Couldn't get the actual position because parentNode couldn't be found.",
-      );
+      throw new Error("ParentNode has not been found.");
     }
     return Array.from(parentNode.children).indexOf(this.node);
   }
@@ -84,25 +105,14 @@ export default class CollectionItem extends AbstractWraplet<{}, Element> {
     });
   }
 
-  private getPositionElement(): Element {
+  private getPositionElement(): Element | null {
     const positionElement = this.node.querySelector(
       this.options.positionSelector,
     );
     if (!positionElement) {
-      throw new Error(`Missing position element.`);
+      return null;
     }
 
     return positionElement;
-  }
-
-  private parseHTMLOptions(htmlOptions: string): CollectionItemOptions {
-    // We run this first to check if we deal with a valid JSON.
-    const jsonOptions = JSON.parse(htmlOptions);
-    // Now we check if JSON was an object.
-    if (htmlOptions.charAt(0) !== "{") {
-      throw new Error(`JSON options have to be passed as an object.`);
-    }
-
-    return jsonOptions;
   }
 }

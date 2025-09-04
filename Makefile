@@ -15,4 +15,4 @@ build:
 	yarn run build
 
 publish: build
-	npm publish --access public
+	yarn publish --access public

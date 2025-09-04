@@ -54,7 +54,7 @@ test("Test initial position calculation altered", () => {
 
   const collections = Collection.create(document, {
     calculateInitialPositionOnInit: true,
-    positionsCalculationListeners: [
+    positionsCalculatedListeners: [
       (item: CollectionItem, index: number): void => {
         item.setPosition(index + 1);
       },

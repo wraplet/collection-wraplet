@@ -1,5 +1,6 @@
+/** @jest-config-loader esbuild-register */
 /** @type {import('ts-jest').JestConfigWithTsJest} **/
-module.exports = {
+export default {
   testEnvironment: "jsdom",
   transform: {
     "^.+.tsx?$": ["ts-jest",{}],

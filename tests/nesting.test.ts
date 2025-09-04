@@ -41,6 +41,13 @@ test("Test nesting", () => {
         });
       }
 
+      // This is needed to work around buggy jsdom selectors. See:
+      // https://github.com/jsdom/jsdom/issues/3924
+      // Problem should be fixed in jsdom 27, but as of writing this, "jest-environment-jsdom"
+      // still uses jsdom 26.
+      // eslint-disable-next-line no-self-assign
+      element.innerHTML = element.innerHTML;
+
       // The handle selector matches only the single handle.
       const handles = element.querySelectorAll(itemHandleSelector);
       expect(handles).toHaveLength(1);
