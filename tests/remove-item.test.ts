@@ -21,7 +21,7 @@ test("Test removing items from the collection", () => {
 </div>
 `;
 
-  Collection.create(document);
+  Collection.createMultiple(document);
 
   const collectionElement = document.querySelector(collectionSelector);
   if (!collectionElement) {
@@ -45,7 +45,7 @@ test("Test adding item to the collection and removing it.", () => {
 <div ${mainAttribute}></div>
 `;
 
-  const collections = Collection.create(document);
+  const collections = Collection.createMultiple(document);
   const collection = collections[0];
 
   const collectionElement = addItemToCollectionByAddProvider(collection);

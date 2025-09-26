@@ -1,48 +1,42 @@
-import { itemProviderAttribute } from "./selectors";
-import { AbstractWraplet, WrapletChildrenMap } from "wraplet";
-import { Groupable, GroupExtractor } from "./Groupable";
-import Collection from "./Collection";
+import { itemProviderAttribute, mainAttribute } from "./selectors";
+import {
+  AbstractWraplet,
+  Core,
+  DefaultCore,
+  WrapletChildrenMap,
+} from "wraplet";
+import Collection, { CollectionMap, CollectionOptions } from "./Collection";
 
 export interface CollectionItemProviderOptions {
   groupAttribute?: string;
 }
 
-const childrenMap = {} as const satisfies WrapletChildrenMap;
-
-export default class CollectionItemProvider
-  extends AbstractWraplet<typeof childrenMap, Element>
-  implements Groupable
-{
+export default class CollectionItemProvider extends AbstractWraplet<
+  {},
+  Element
+> {
   private prototypeAttribute: string = "data-prototype";
   private options: Required<CollectionItemProviderOptions>;
 
   private listeners: ((element: Element) => void)[] = [];
 
-  private groupExtractorCallback: GroupExtractor = (element: Element) =>
-    element.getAttribute(this.options.groupAttribute);
-
-  constructor(element: Element, options: CollectionItemProviderOptions = {}) {
-    super(element);
+  constructor(
+    core: Core<{}, Element>,
+    options: CollectionItemProviderOptions = {},
+  ) {
+    super(core);
     const defaultOptions: Required<CollectionItemProviderOptions> = {
       groupAttribute: Collection.defaultGroupAttribute,
     };
     this.options = { ...defaultOptions, ...options };
 
-    this.childrenManager.addEventListener(this.node, "click", () => {
+    this.core.addEventListener(this.node, "click", () => {
       const prototype = this.getPrototype();
       const newElement = this.createItemFromString(prototype);
       for (const listener of this.listeners) {
         listener(newElement);
       }
     });
-  }
-
-  public setGroupExtractor(callback: GroupExtractor): void {
-    this.groupExtractorCallback = callback;
-  }
-
-  public getGroup(): string | null {
-    return this.groupExtractorCallback(this.node);
   }
 
   /**
@@ -63,10 +57,6 @@ export default class CollectionItemProvider
     return prototype;
   }
 
-  protected defineChildrenMap(): typeof childrenMap {
-    return childrenMap;
-  }
-
   private createItemFromString(string: string): Element {
     const newElement = document.createElement("div");
     newElement.innerHTML = string;
@@ -77,14 +67,16 @@ export default class CollectionItemProvider
     return child;
   }
 
-  public static create(
-    document: Document,
-    additional_args: unknown[] = [],
+  public static createMultiple(
+    node: ParentNode,
+    options: CollectionOptions = {},
+    attribute: string = itemProviderAttribute,
   ): CollectionItemProvider[] {
-    return this.createWraplets(
-      document,
-      itemProviderAttribute,
-      additional_args,
-    );
+    return this.createWraplets(node, {}, attribute, [options]);
+  }
+
+  public static create(element: HTMLElement): CollectionItemProvider {
+    const core = new DefaultCore<{}, Element>(element, {});
+    return new CollectionItemProvider(core);
   }
 }

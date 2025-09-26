@@ -8,14 +8,14 @@ it("Test Collection item added listeners", () => {
 
   collectionElement.appendChild(itemElement);
 
-  const collection = new Collection(collectionElement);
+  const collection = Collection.create(collectionElement);
 
   collection.addItemAddedListener((item) => {
     expect(item).toBeInstanceOf(CollectionItem);
     fn();
   });
 
-  const item = new CollectionItem(itemElement);
+  const item = CollectionItem.create(itemElement);
 
   collection.addItem(item);
 
@@ -27,13 +27,12 @@ it("Test Collection options validation", () => {
     '{"positionsCalculatedListeners": true}',
     '{"calculateInitialPositionOnInit": 1}',
     '{"sortable": 1}',
-    '{"groupAttribute": true}',
   ];
 
   const collectionElement = document.createElement("div");
 
   const createCollection = () => {
-    new Collection(collectionElement);
+    Collection.create(collectionElement);
   };
 
   for (const invalidOption of invalidOptions) {
@@ -45,7 +44,6 @@ it("Test Collection options validation", () => {
     '{"positionsCalculatedListeners": []}',
     '{"calculateInitialPositionOnInit": true}',
     '{"sortable": true}',
-    '{"groupAttribute": "data-attribute"}',
   ];
 
   for (const validOption of validOptions) {
@@ -65,8 +63,8 @@ it("Test Collection positions calculated listeners", () => {
 
   collectionElement.appendChild(itemElement);
 
-  const collection = new Collection(collectionElement);
-  const item = new CollectionItem(itemElement);
+  const collection = Collection.create(collectionElement);
+  const item = CollectionItem.create(itemElement);
 
   const fn = jest.fn();
 

@@ -15,7 +15,7 @@ export function addItemToCollectionByAddProvider(
   collection: Collection,
   addProvider: boolean = true,
 ): Element {
-  const providers = CollectionItemProvider.create(document);
+  const providers = CollectionItemProvider.createMultiple(document);
   const provider = providers[0];
 
   if (addProvider) {
@@ -43,7 +43,7 @@ test("Test adding item to the collection", () => {
 <div ${mainAttribute}></div>
 `;
 
-  const collections = Collection.create(document);
+  const collections = Collection.createMultiple(document);
   const collection = collections[0];
 
   const collectionElement = addItemToCollectionByAddProvider(collection);
@@ -56,7 +56,7 @@ test("Test position calculation on item add", () => {
 <div ${mainAttribute}></div>
 `;
 
-  const collections = Collection.create(document, {
+  const collections = Collection.createMultiple(document, {
     positionsCalculatedListeners: [
       (item: CollectionItem, index: number): void => {
         item.setPosition(index + 1);

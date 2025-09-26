@@ -13,7 +13,7 @@ test("Test sortable can be enabled with html options", () => {
     </div>
 </div>
 `;
-  const collection = Collection.create(document)[0];
+  const collection = Collection.createMultiple(document)[0];
 
   expect(collection.isSortable()).toBe(true);
 });

@@ -15,7 +15,7 @@ it("Test delete listeners", () => {
 
   const func = jest.fn();
 
-  const collections = Collection.create(document);
+  const collections = Collection.createMultiple(document);
   if (!collections[0]) {
     throw new Error("Collections not found.");
   }
@@ -35,7 +35,7 @@ test("Test collection item options html override", () => {
 </div>
 `;
 
-  const collections = Collection.create(document, {
+  const collections = Collection.createMultiple(document, {
     sortable: true,
   });
 
@@ -54,7 +54,7 @@ test("Test collection item options html override", () => {
 
 it("Test CollectionItem no position element", () => {
   const element = document.createElement("div");
-  const item = new CollectionItem(element);
+  const item = CollectionItem.create(element);
 
   const fnGet = () => {
     item.getPosition();
@@ -74,7 +74,7 @@ it("Test CollectionItem no position value", () => {
   positionElement.setAttribute("data-position", "");
   element.appendChild(positionElement);
 
-  const item = new CollectionItem(element);
+  const item = CollectionItem.create(element);
 
   const fnGet = () => {
     item.getPosition();
@@ -89,7 +89,7 @@ it("Test CollectionItem no parent node", () => {
   positionElement.setAttribute("data-position", "");
   element.appendChild(positionElement);
 
-  const item = new CollectionItem(element);
+  const item = CollectionItem.create(element);
 
   const fnGet = () => {
     item.getDOMPosition();
@@ -104,7 +104,7 @@ it("Test CollectionItem options validators", () => {
   const itemElement = document.createElement("div");
 
   const createItem = () => {
-    new CollectionItem(itemElement);
+    CollectionItem.create(itemElement);
   };
 
   for (const invalidOption of invalidOptions) {

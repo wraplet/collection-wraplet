@@ -24,7 +24,7 @@
   "license": "MIT",
   "dependencies": {
     "sortablejs": "^1.15.2",
-    "wraplet": "^0.18.0"
+    "wraplet": "^0.21.0"
   },
   "devDependencies": {
     "typescript": "^5.9.2",

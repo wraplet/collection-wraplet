@@ -26,7 +26,7 @@ test("Test nesting", () => {
 </div>
 `;
 
-  const collections = Collection.create(document, { sortable: true });
+  const collections = Collection.createMultiple(document, { sortable: true });
   for (const collection of collections) {
     // Make sure collections get the correct items.
     expect(collection.getItems()).toHaveLength(1);

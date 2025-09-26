@@ -5,7 +5,7 @@ import { getIndirectException } from "./resources/utils";
 it("Test CollectionItemProvider missing prototype", async () => {
   const element = document.createElement("div");
 
-  new CollectionItemProvider(element);
+  CollectionItemProvider.create(element);
   const errorThrown = await getIndirectException(async (user) => {
     await user.click(element);
   });
@@ -20,7 +20,7 @@ it("Test CollectionItemProvider invalid prototype", async () => {
   const element = document.createElement("div");
   element.setAttribute("data-prototype", "invalid value");
 
-  new CollectionItemProvider(element);
+  CollectionItemProvider.create(element);
   const errorThrown = await getIndirectException(async (user) => {
     await user.click(element);
   });

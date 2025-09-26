@@ -4,10 +4,11 @@ import CollectionItem from "./CollectionItem";
 import Sortable from "sortablejs";
 import {
   AbstractWraplet,
+  Core,
+  DefaultCore,
   StorageValidators,
   WrapletChildrenMap,
 } from "wraplet";
-import { Groupable, GroupExtractor } from "./Groupable";
 import { ElementStorage } from "wraplet/storage";
 
 type PositionCalculatedListener = (item: CollectionItem, index: number) => void;
@@ -16,10 +17,9 @@ export interface CollectionOptions extends Record<string, unknown> {
   calculateInitialPositionOnInit?: boolean;
   positionsCalculatedListeners?: PositionCalculatedListener[];
   sortable?: boolean;
-  groupAttribute?: string;
 }
 
-const childrenMap = {
+export const CollectionMap = {
   itemProviders: {
     // We don't define selector, because we assume that the dependency will be provided
     // externally.
@@ -35,40 +35,38 @@ const childrenMap = {
   },
 } as const satisfies WrapletChildrenMap;
 
-export default class Collection
-  extends AbstractWraplet<typeof childrenMap, HTMLElement>
-  implements Groupable
-{
+export default class Collection extends AbstractWraplet<
+  typeof CollectionMap,
+  HTMLElement
+> {
   public static defaultGroupAttribute = "data-group";
   private readonly itemAddedListeners: ((item: CollectionItem) => void)[] = [];
   private readonly positionsCalculatedListeners: PositionCalculatedListener[] =
     [];
 
-  private groupExtractorCallback: GroupExtractor = (element: Element) =>
-    element.getAttribute(this.options.groupAttribute);
-
   private sortable: Sortable | null = null;
   private options: Required<CollectionOptions>;
 
-  constructor(element: HTMLElement, options: CollectionOptions = {}) {
-    super(element);
+  constructor(
+    core: Core<typeof CollectionMap, HTMLElement>,
+    options: CollectionOptions = {},
+  ) {
+    super(core);
 
     const defaultOptions: Required<CollectionOptions> = {
       positionsCalculatedListeners: [],
       calculateInitialPositionOnInit: false,
       sortable: false,
-      groupAttribute: Collection.defaultGroupAttribute,
     };
 
     const validators: StorageValidators<typeof defaultOptions> = {
       positionsCalculatedListeners: (item) => Array.isArray(item),
       calculateInitialPositionOnInit: (item) => typeof item === "boolean",
       sortable: (item) => typeof item === "boolean",
-      groupAttribute: (item) => typeof item === "string",
     };
 
     const storage = new ElementStorage<Required<CollectionOptions>>(
-      element,
+      this.node,
       mainAttribute,
       { ...defaultOptions, ...options },
       validators,
@@ -76,10 +74,8 @@ export default class Collection
 
     this.options = storage.getAll();
 
-    if (this.options.positionsCalculatedListeners) {
-      this.positionsCalculatedListeners =
-        this.options.positionsCalculatedListeners;
-    }
+    this.positionsCalculatedListeners =
+      this.options.positionsCalculatedListeners;
 
     for (const item of this.children.items) {
       item.addDeleteListener(() => {
@@ -94,14 +90,6 @@ export default class Collection
     if (this.options.sortable) {
       this.sortable = this.initSortable();
     }
-  }
-
-  public setGroupExtractor(callback: GroupExtractor): void {
-    this.groupExtractorCallback = callback;
-  }
-
-  public getGroup(): string | null {
-    return this.groupExtractorCallback(this.node);
   }
 
   public addItemAddedListener(listener: (item: CollectionItem) => void) {
@@ -140,11 +128,7 @@ export default class Collection
   }
 
   private createItem(element: Element): CollectionItem {
-    return new CollectionItem(element);
-  }
-
-  protected defineChildrenMap(): typeof childrenMap {
-    return childrenMap;
+    return CollectionItem.create(element);
   }
 
   private initSortable(): Sortable {
@@ -156,7 +140,8 @@ export default class Collection
       draggable: itemSelector,
       ghostClass: "sortable-ghost",
       dragClass: "sortable-drag",
-      onUpdate: () => {
+      // @todo We need to find a way of testing this.
+      onUpdate: /* istanbul ignore next */ () => {
         this.recalculatePositions();
       },
     });
@@ -183,10 +168,19 @@ export default class Collection
     }
   }
 
-  public static create(
+  public static createMultiple(
     node: ParentNode,
     options: CollectionOptions = {},
+    attribute: string = mainAttribute,
   ): Collection[] {
-    return this.createWraplets(node, mainAttribute, [options]);
+    return this.createWraplets(node, CollectionMap, attribute, [options]);
+  }
+
+  public static create(element: HTMLElement): Collection {
+    const core = new DefaultCore<typeof CollectionMap, HTMLElement>(
+      element,
+      CollectionMap,
+    );
+    return new Collection(core);
   }
 }

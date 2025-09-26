@@ -5,6 +5,8 @@ import {
 } from "./selectors";
 import {
   AbstractWraplet,
+  Core,
+  DefaultCore,
   destroyWrapletsRecursively,
   StorageValidators,
 } from "wraplet";
@@ -21,8 +23,8 @@ export default class CollectionItem extends AbstractWraplet<{}, Element> {
   private deleteListeners: ((item: CollectionItem) => void)[] = [];
   private options: Required<CollectionItemOptions>;
 
-  constructor(element: Element, options: CollectionItemOptions = {}) {
-    super(element);
+  constructor(core: Core<{}, Element>, options: CollectionItemOptions = {}) {
+    super(core);
     const defaultOptions: Required<CollectionItemOptions> = {
       positionSelector: "[data-position]",
     };
@@ -32,7 +34,7 @@ export default class CollectionItem extends AbstractWraplet<{}, Element> {
     };
 
     const storage = new ElementStorage<Required<CollectionItemOptions>>(
-      element,
+      this.node,
       itemAttribute,
       { ...defaultOptions, ...options },
       validators,
@@ -40,7 +42,7 @@ export default class CollectionItem extends AbstractWraplet<{}, Element> {
 
     this.options = storage.getAll();
 
-    const removeElements = element.querySelectorAll(
+    const removeElements = this.node.querySelectorAll(
       CollectionItem.removeSelector,
     );
     for (const removeElement of removeElements) {
@@ -95,10 +97,6 @@ export default class CollectionItem extends AbstractWraplet<{}, Element> {
     destroyWrapletsRecursively(this.node);
   }
 
-  protected defineChildrenMap(): {} {
-    return {};
-  }
-
   private registerRemoveButton(element: Element) {
     element.addEventListener("click", () => {
       this.delete();
@@ -114,5 +112,10 @@ export default class CollectionItem extends AbstractWraplet<{}, Element> {
     }
 
     return positionElement;
+  }
+
+  public static create(element: Element): CollectionItem {
+    const core = new DefaultCore<{}, Element>(element, {});
+    return new CollectionItem(core);
   }
 }

@@ -11,14 +11,14 @@ import { mainAttribute, itemProviderAttribute } from "../src";
 test("Test collection initialization", () => {
   document.body.innerHTML = `<div ${mainAttribute}></div>`;
 
-  const collections = Collection.create(document);
+  const collections = Collection.createMultiple(document);
   expect(collections).toHaveLength(1);
 });
 
 test("Test collection item provider initialization", () => {
   document.body.innerHTML = `<div ${itemProviderAttribute}></div>`;
 
-  const providers = CollectionItemProvider.create(document);
+  const providers = CollectionItemProvider.createMultiple(document);
   expect(providers).toHaveLength(1);
 });
 
@@ -30,7 +30,7 @@ test("Test initial default position calculation", () => {
 </div>
 `;
 
-  const collections = Collection.create(document, {
+  const collections = Collection.createMultiple(document, {
     calculateInitialPositionOnInit: true,
   });
   const collection = collections[0];
@@ -52,7 +52,7 @@ test("Test initial position calculation altered", () => {
 </div>
 `;
 
-  const collections = Collection.create(document, {
+  const collections = Collection.createMultiple(document, {
     calculateInitialPositionOnInit: true,
     positionsCalculatedListeners: [
       (item: CollectionItem, index: number): void => {
@@ -76,7 +76,7 @@ test("Test collection options html override", () => {
 <div ${mainAttribute}='{"sortable": false}'></div>
 `;
 
-  const collections = Collection.create(document, {
+  const collections = Collection.createMultiple(document, {
     sortable: true,
   });
 
