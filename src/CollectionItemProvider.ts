@@ -1,11 +1,6 @@
-import { itemProviderAttribute, mainAttribute } from "./selectors";
-import {
-  AbstractWraplet,
-  Core,
-  DefaultCore,
-  WrapletChildrenMap,
-} from "wraplet";
-import Collection, { CollectionMap, CollectionOptions } from "./Collection";
+import { itemProviderAttribute } from "./selectors";
+import { AbstractWraplet, Core, DefaultCore } from "wraplet";
+import Collection, { CollectionOptions } from "./Collection";
 
 export interface CollectionItemProviderOptions {
   groupAttribute?: string;
